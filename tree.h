@@ -165,4 +165,23 @@ public:
 		}
 		
 	}
+	//search in the tree
+	bool search(bTreeNode* find, int hash,string& path) {
+		int i = 0; //searching index
+		while (i<find->keyNum && hash > find->keys[i].hash) {
+			i++;
+		}
+		if (hash == find->keys[i].hash) {
+			path = path.append(find->keys[i].itemName);
+			return true;
+		}
+		if (find->leaf) {
+			return false;
+		}
+		path = path.append(find->keys[i].itemName);
+		path = path.append("/");
+		return search(find->children[i], hash, path);
+	}
+
+	//deleting files and folders.
 };
