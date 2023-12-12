@@ -175,6 +175,9 @@ public:
 		//newNode->keyNum = caller->degree - 1;
 		//copying keys of internal node to the newNode
 		int i = tDeg/2;
+		if (tDeg % 2 == 0) {
+			i -= 1;
+		}
 		int median = i;
 		int j = 0;
 		 //median value will be incremented as median is no longer required in the new node.
