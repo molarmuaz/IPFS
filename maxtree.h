@@ -103,7 +103,7 @@ public:
 		keys = new KeyList[deg];
 		degree = deg;
 		keyNum = 0;
-		children = new  bTreeNode * [degree+1];
+		children = new  bTreeNode * [degree + 1];
 		leaf = isLeaf;
 	}
 	//tree node functionalities since we cant break the actual call structure of a b tree using the universal method conventions.
@@ -119,23 +119,35 @@ public:
 	int tDeg; //degree of the tree that can be made.
 	int hashFound; //a index that will be used for searching a duplicate hash value and if found it will add it to the keys linked list.
 	bool insertInNew;
+	bool hashExists;
+	int height;
+	//what if the split was called from the root node. this means an increase in the height of the tree. 
 	bTree(int degree) { //constructor for the tree. Since we need to specify the size during the run time for creation.
 		root = NULL;
 		tDeg = degree;
 		hashFound = 0;
 		insertInNew = false;
+		hashExists = false;
+		height = 0;
+		//what if the height of the tree exceeds 2. In this case we cannot follow the common insertion conventions.
 	}
 	void insert(int hash, string item) {
+		//search for hash to avoid any mishaps in the insertions.
+		//if hash exists then we will run the hash found function for every node to find the correct position for the hash.
+		// else we will skip all hash found functions since the following hash will be a new hash.
+		hashExists = isNewHash(root, hash);
 		//initializer if the tree is empty.
 		if (root == NULL) {
 			root = new bTreeNode(tDeg, true);
 			root->keys[0].insert(hash, item);
 			root->keyNum = 1;
+			height = 1;
 		}
 		//if the root is full we will proceed to grow the tree.
 		else if (root->keyNum == tDeg - 1) {
-			//create a new node , let this be called the calling node through which we will reset out structure.
-			if (searchForHash(root, hash)) {
+			//create a new node , let this be called the calling node through which we will reset our structure.
+			height += 1; //if height exceeds 2 only add the value to the right specific child. else you will do the same procedures.
+			if (hashExists && searchForHash(root, hash)) {
 				root->keys[hashFound].insert(hash, item);
 			}
 			else {
@@ -144,16 +156,17 @@ public:
 				callinNode->children[0] = root;
 				//split the root.
 				//through the calling node.
-				split(callinNode, 0, root,hash,item);
+				split(callinNode, 0, root, hash, item);
 
 				int i = 0;
 				if (callinNode->keys[0].head->hash < hash) {
 					i++;
 				}
-				
+				//what if the tree grows in height beyond two. Then we cannot store the value inside the root and transfer it.
 				NotFull(callinNode->children[i], hash, item);
 
 				root = callinNode;
+				//insertInNew = false;
 			}
 		}
 		else {
@@ -168,20 +181,28 @@ public:
 		}
 	}
 	//method to split children
-	void split(bTreeNode* caller, int cIndex, bTreeNode* input,int hash,string item) {
+	void split(bTreeNode* caller, int cIndex, bTreeNode* input, int hash, string item) {
 		//the parametre conventions are as follows-> caller is the node that will be used to adjust, cIndex is the index where the current child lies
 		//input is the node that will be used as the reference to fill values for a new node that is to be created.
 		bTreeNode* newNode = new bTreeNode(input->degree, input->leaf);
 		//newNode->keyNum = caller->degree - 1;
 		//copying keys of internal node to the newNode
-		int i = tDeg/2;
+		int i = tDeg / 2;
 		if (tDeg % 2 == 0) {
 			i -= 1;
 		}
 		int median = i;
 		int j = 0;
-		 //median value will be incremented as median is no longer required in the new node.
-		if (input->keys[i - 1].head->hash > hash) { //means that the median was found in the right position and no change is needed.
+		//incase the calling node was not a leaf node we will do the preemtive split algorithm and just make a new root then proceed to add the child.
+		if (!input->leaf) {
+			for (i, j; i < caller->degree - 1; i++, j++) {
+				newNode->keys[j] = input->keys[i];
+				newNode->keyNum++;
+			}
+		}
+		//incase the calling node was a leaf itself.
+		//median value will be incremented as median is no longer required in the new node.
+		else if (input->keys[i - 1].head->hash > hash) { //means that the median was found in the right position and no change is needed.
 			for (i, j; i < caller->degree - 1; i++, j++) {
 				newNode->keys[j] = input->keys[i];
 				newNode->keyNum++;
@@ -193,7 +214,7 @@ public:
 			insertInNew = true;
 			median += 1;
 			i += 1;
-			for (i, j;i < caller->degree - 1;i++, j++) {
+			for (i, j; i < caller->degree - 1; i++, j++) {
 				newNode->keys[j] = input->keys[i];
 				newNode->keyNum++;
 			}
@@ -205,9 +226,9 @@ public:
 			KeyList temp;
 			//sorting.
 			int minIdx = 0;
-			for (int i = 0;i < newNode->keyNum-1;i++) {
+			for (int i = 0; i < newNode->keyNum - 1; i++) {
 				minIdx = i;
-				for (int j = i + 1;j < newNode->keyNum;j++) {
+				for (int j = i + 1; j < newNode->keyNum; j++) {
 					if (newNode->keys[j].head->hash < newNode->keys[minIdx].head->hash) {
 						minIdx = j;
 					}
@@ -222,8 +243,7 @@ public:
 		//reducing the number of keys in the input node by 1. Since it was full it will go down by 1.
 		if (!input->leaf) {
 			//copying the last children of input node if input node was not a leaf since we are constantly splitting.
-			for (int i = 0;i <= tDeg / 2;i++) {
-				cout << input->children[i + 1]->keys[0].head->hash << endl;
+			for (int i = 0; i <= tDeg / 2; i++) {
 				newNode->children[i] = input->children[i + 1];
 			}
 		}
@@ -247,8 +267,8 @@ public:
 		//adding that value to the calling node.
 		//shift the median key up.
 		caller->keys[cIndex] = input->keys[median - 1];
-		
-		
+
+
 		caller->keyNum += 1;
 	}
 	//method to insert into a non full node i.e could be a leaf or could not be a leaf.
@@ -259,7 +279,7 @@ public:
 		//check if leaf node or not.
 		if (adder->leaf) {
 			if (!insertInNew) {
-				if (searchForHash(adder, hash)) {
+				if (hashExists && searchForHash(root, hash)) { //these searches will only run if the hash was already found to be inside the tree.
 					adder->keys[hashFound].insert(hash, item);
 				}
 				else {
@@ -280,7 +300,7 @@ public:
 		else {
 			//check if index exists
 			insertInNew = false;
-			if (searchForHash(adder, hash)) {
+			if (hashExists && searchForHash(root, hash)) {
 				adder->keys[hashFound].insert(hash, item);
 			}
 			else {
@@ -292,7 +312,11 @@ public:
 				}
 				//check if the child at the current required index is full or not.
 				if (adder->children[index + 1]->keyNum == adder->degree - 1) {
-					split(adder, index + 1, adder->children[index + 1],hash,item);
+					//insertInNew = false;
+					if (!hashExists) {
+						adder->keyNum -= 1;
+					}
+					split(adder, index + 1, adder->children[index + 1], hash, item);
 					//see which child is going to have the new key the smaller batch or the greater batch.
 					if (adder->keys[index + 1].head->hash > hash) {
 						index++;
@@ -301,6 +325,7 @@ public:
 				}
 				//calling an insert for the child now.
 				//insert the new key into the child.
+			
 				NotFull(adder->children[index + 1], hash, item);
 			}
 		}
@@ -357,6 +382,28 @@ public:
 		}
 
 	}
+	bool isNewHash(bTreeNode* find, int hash) {
+		int i = 0;
+		if (root != NULL) {
+			while (i<find->keyNum && hash > find->keys[i].head->hash) {
+				i++;
+			}
+
+			if (find->keys[i].head != NULL) {
+				if (hash == find->keys[i].head->hash) {
+					hashFound = i;
+					return true;
+				}
+				else {
+					return false;
+				}
+			}
+		}
+		else {
+			return false;
+		}
+
+	}
 	//deleting files and folders. //Need to ensure that the node does not get too small during deletion.
 	void Delete(bTreeNode* input, int hash) {
 		//finding the index of the key that has to be removed.
@@ -383,8 +430,7 @@ public:
 			if (indexKey == input->keyNum) {
 				subTree = true;
 			}
-
-			if (input->children[indexKey]->keyNum < input->degree) {
+			if (input->children[indexKey]->keyNum < (input->degree/2)-1) {
 				FillChild(input, indexKey);
 			}
 			if (subTree && indexKey > input->keyNum) {
@@ -406,13 +452,13 @@ public:
 		//getting a hash value to be used.
 		int tempHash = input->keys[index].head->hash;
 		//if child has atleast t keys.
-		if (input->children[index]->keyNum >= input->degree) {
+		if (input->children[index]->keyNum >= input->degree/2) {
 			KeyList predecessor = getPredecessor(input, index); //get the predecessor. contains both hash and itemName.
 			input->keys[index] = predecessor;
 			Delete(input->children[index], predecessor.head->hash);
 		}
 		//examine the next child if the previous child does not meet the criteria.
-		else if (input->children[index + 1]->keyNum >= input->degree) {
+		else if (input->children[index + 1]->keyNum >= input->degree/2) {
 			//get successor.
 			KeyList successor = getSuccessor(input, index);
 			input->keys[index] = successor;
@@ -440,10 +486,10 @@ public:
 		return finder->keys[0];
 	}
 	void FillChild(bTreeNode* input, int index) { //method to complete a child node that has less than t-1 keys.
-		if (index != 0 && input->children[index - 1]->keyNum >= input->degree) {
+		if (index != 0 && input->children[index - 1]->keyNum >= input->degree/2) {
 			borrowPrev(input, index);
 		}
-		else if (index != input->keyNum && input->children[index + 1]->keyNum >= input->degree) {
+		else if (index != input->keyNum && input->children[index + 1]->keyNum >= input->degree/2) {
 			borrowNext(input, index);
 		}
 		else {
@@ -514,11 +560,11 @@ public:
 		bTreeNode* child = input->children[index];
 		bTreeNode* sibling = input->children[index + 1];
 
-		child->keys[input->degree - 1] = input->keys[index];
+		child->keys[input->degree - 2] = input->keys[index];
 
 		//push all keys from the sibling to the child.
 		for (int i = 0; i < sibling->keyNum; i++) {
-			child->keys[i + input->degree] = sibling->keys[i];
+			child->keys[i] = sibling->keys[i];
 		}
 		//if the children are not leafs then the children can also be copied.
 		if (!child->leaf) {
