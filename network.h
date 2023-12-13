@@ -10,40 +10,16 @@ class Network
 private:
     node* head;
     int numberOfPCs;
-    int activePCs;
-    bool * activeIDs; //will be replaced with routing table once that is figured out
     int IDspace;
+    int activePCs;
+    bool * activeIDs;
 public:
     Network(int idsp)
     {
         IDspace = idsp;
         head = NULL;
         numberOfPCs = pow(2,IDspace);
-
-        node* temp = new node;
-        node* p = head;
-
-        //making a cirular linked list (makes a linked list normally and sets the next of the last node to head)
-        for(int i = 0; i<numberOfPCs; i++)
-        {
-            temp->setID(i);
-            temp->setActive(false);
-            if(head == NULL)
-            {
-                head = temp;
-            }
-            else
-            {
-                while(p->getNext() != NULL)
-                {
-                    p = p->getNext();
-                }
-                p->setNext(temp);
-            }
-        }
-        p = p->getNext();
-        p->setNext(head);
-
+        activePCs = 0;
         //making a hash table to store IDs of active PCs
         activeIDs = new bool[numberOfPCs]{0};
     }
@@ -62,7 +38,7 @@ public:
         //for now id is just a random number generated between 0 and numberOfPCs and is a number that isn't already active
         if(activePCs < numberOfPCs)
         {
-            if(x == -1)
+            if(x == -1 && activePCs)
             {
                 //finding a random pc to activate
                 x = rand() % activePCs;
@@ -71,16 +47,31 @@ public:
                     x = rand() % activePCs;
                 }
             }
-
-            //setting status of PC to active
-            while(head->getID() != x)
+            else if(!activePCs)
             {
-                head = head->getNext();
+                
             }
-            head->setActive(true);
+
+            node* temp = new node;
+            temp->setID(x);
+
+            node* p = head;
+            //adding the pc//
+            while(true)
+            {
+                if(p->getID() < x && p->getNext()->getID() > x)
+                {
+                    break;
+                }
+                p = p->getNext();
+            }
+
+            temp->setNext(p->getNext());
+            p->setNext(temp);
 
             //recording in table that PC x has been activated
             activeIDs[x] = true;
+            activePCs++;
         }
         else
         {
@@ -91,27 +82,29 @@ public:
         //ADD FUNCTIONALITY TO BALANCE FILE DISTRIBUTION AFTER ADDITION OF A PC (AFTER B-TREES ARE MADE)
     }
 
-   int hashing(string hash, int max = -1 )
-{
-    char x;
-    int result = 0;
-    for(int i =0; i<3; i++)
+    int hashing(string hash, int max = -1 )
     {
-        x = hash[2-i];
-        if(x>=97 && x<=102)
+        char x;
+        int result = 0;
+        for(int i =0; i<3; i++)
         {
-            result += (int(x)-87) * pow(16,i);
+            x = hash[2-i];
+            if(x>=97 && x<=102)
+            {
+                result += (int(x)-87) * pow(16,i);
+            }
+            else
+            {
+                result+= (int(x)-48) * pow(16,i);
+            }
         }
-        else
-        {
-            result+= (int(x)-48) * pow(16,i);
-        }
-    }
 
-    if(max != -1)
-        return (result%max);
-    return result;
-}
+        if(max != -1)
+        {
+            return (result%max);
+        }
+        return result;
+    }
 
 
     void insert(string x) // we can later create a function to read files and then insert the contents of that file in this function as a string
