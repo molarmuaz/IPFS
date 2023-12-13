@@ -2,14 +2,14 @@
 class node
 {
 private:
-    tree* head;
-    bool active;
+    
+    bTree head;
     node* next;
     int id;
 public:
     node()
     {
-        active = false;
+        next = nullptr;
     }
 
     void setID(int idn)
@@ -20,16 +20,6 @@ public:
     int getID()
     {
         return id;
-    }
-
-    void setActive(bool x)
-    {
-        active = x;
-    }
-
-    bool getActive()
-    {
-        return active;
     }
 
     void setNext(node* n)
