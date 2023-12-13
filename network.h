@@ -91,7 +91,27 @@ public:
         //ADD FUNCTIONALITY TO BALANCE FILE DISTRIBUTION AFTER ADDITION OF A PC (AFTER B-TREES ARE MADE)
     }
 
-   
+   int hashing(string hash, int max = -1 )
+{
+    char x;
+    int result = 0;
+    for(int i =0; i<3; i++)
+    {
+        x = hash[2-i];
+        if(x>=97 && x<=102)
+        {
+            result += (int(x)-87) * pow(16,i);
+        }
+        else
+        {
+            result+= (int(x)-48) * pow(16,i);
+        }
+    }
+
+    if(max != -1)
+        return (result%max);
+    return result;
+}
 
 
     void insert(string x) // we can later create a function to read files and then insert the contents of that file in this function as a string
