@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include<cmath>
+#include <cmath>
 using namespace std;
 
 //key struct
@@ -708,4 +708,158 @@ public:
 			Display(root->children[i]);
 		}
 	}
+	//deletion for the new insertion algorithm start here.
+	void remove(int hash) {
+		root = remove(hash, root);
+	}
+	bTreeNode* remove(int hash, bTreeNode* root) {
+		bTreeNode* temp = NULL;
+		if (!findIndex(hash, root)) {
+			cout << "THE FILES DO NOT EXIST IN THE SYSTEM" << endl;
+		}
+		else {
+			if (root->keyNum == 0) {
+				temp = root;
+				root = root->children[0];
+				delete temp;
+			}
+		}
+		return root;
+	}
+	bool findIndex(int hash, bTreeNode* input) {
+		int i;
+		bool condition;
+		if (root == NULL) {
+			return false;
+		}
+		else {
+			condition = SearchForNode(hash, input, i);
+			if (condition) {
+				if (input->children[i - 1]) {
+					Successor(input, i);
+					condition = findIndex(input->keys[i].head->hash, input->children[i]);
+					if (!condition) {
+						cout << "VALUE DOES NOT EXIST IN THE DRIVE" << endl;
+					}
+				}
+				else {
+					clear(input, i);
+				}
+			}
+			else {
+				condition = findIndex(hash, input->children[i]);
+			}
+			if (input->children[i]!=NULL) {
+				if (input->children[i]->keyNum < tDeg) {
+					Undo(input, i);
+				}
+			}
+			return condition;
+		}
+	}
+	void clear(bTreeNode* input, int index) {
+		int i;
+		for (i = index + 1;i <= input->keyNum;i++) {
+			input->keys[i - 1] = input->keys[i];
+			input->children[i - 1] = input->children[i];
+		}
+		input->keyNum--;
+	}
+	void Successor(bTreeNode* input, int value) {
+		bTreeNode* temp;
+		temp = input->children[value];
+		while (temp->children[0]) {
+			temp = temp->children[0];
+		}
+		input->keys[value] = temp->keys[1];
+	}
+	void Undo(bTreeNode* input, int value) {
+		if (value == 0) {
+			if (input->children[value]->keyNum > ceil((tDeg * 1.0) / 2)) {
+				left(input, 1);
+			}
+			else {
+				Combine(input, 1);
+			}
+		}
+		else {
+			if (value == input->keyNum) {
+				if (input->children[value - 1]->keyNum > ceil((tDeg * 1.0) / 2)) {
+					right(input, value);
+				}
+				else {
+					Combine(input, value);
+				}
+			}
+			else {
+				if (input->children[value - 1]->keyNum > ceil((tDeg * 1.0) / 2)) {
+					right(input, value);
+				}
+				else {
+					if (input->children[value + 1]->keyNum > ceil((tDeg * 1.0) / 2)) {
+					left(input, value + 1);
+				     }
+					else {
+						Combine(input, value);
+					}
+				}
+			}
+		}
+	}
+	void right(bTreeNode* input, int value) {
+		int i;
+		bTreeNode* placeholder;
+		placeholder = input->children[value];
+		for (i = placeholder->keyNum;i > 0;i--) {
+			placeholder->keys[i + 1] = placeholder->keys[i];
+			placeholder->children[i + 1] = placeholder->children[i];
+		}
+		placeholder->children[1] = placeholder->children[0];
+		placeholder->keyNum++;
+		placeholder->keys[1] = placeholder->keys[value];
+		placeholder = input->children[i - 1];
+		input->keys[value] = placeholder->keys[placeholder->keyNum];
+		input->children[value]->children[0] = placeholder->children[placeholder->keyNum];
+		placeholder->keyNum--;
+	}
+	void left(bTreeNode* input, int value) {
+		int i;
+		bTreeNode* placeholder;
+		placeholder = input->children[value-1];
+		placeholder->keyNum++;
+		placeholder->keys[placeholder->keyNum] = input->keys[value];
+		placeholder->children[placeholder->keyNum] = input->children[value]->children[0];
+		placeholder = input->children[value];
+		input->keys[value] = placeholder->keys[1];
+		placeholder->children[0] = placeholder->children[1];
+		placeholder->keyNum--;
+		for (i = 1;i<=placeholder->keyNum;i++) {
+			placeholder->keys[i] = placeholder->keys[i+1];
+			placeholder->children[i] = placeholder->children[i+1];
+		}
+	}
+	void Combine(bTreeNode* input, int value) {
+		int i;
+		bTreeNode* placeholder;
+		bTreeNode* placeholder2;
+		placeholder = input->children[value];
+		placeholder2 = input->children[value - 1];
+		placeholder2->keyNum++;
+		placeholder2->keys[placeholder2->keyNum] = input->keys[value];
+		if (placeholder2->children[0] != NULL) {
+			placeholder2->children[placeholder2->keyNum] = placeholder->children[0];
+		}
+		for (i = 1;i <= placeholder->keyNum;i++) {
+			placeholder2->keyNum++;
+			placeholder2->keys[placeholder2->keyNum] = placeholder->keys[i];
+			placeholder2->children[placeholder2->keyNum] = placeholder->children[i];
+		}
+		for (i = value;i < input->keyNum;i++) {
+			input->keys[i] = input->keys[i + 1];
+			input->children[i] = input->children[i + 1];
+		}
+		input->keyNum--;
+		delete placeholder;
+	}
+
 };
