@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-
+#include<cmath>
 using namespace std;
 
 //key struct
@@ -100,7 +100,7 @@ public:
 	bTreeNode** children; //the children pointer array that will store the next pointer added to the tree.
 	bool leaf; //indicator if a node is leaf node or no.
 	bTreeNode(int deg, bool isLeaf) {
-		keys = new KeyList[deg];
+		keys = new KeyList[deg+1];
 		degree = deg;
 		keyNum = 0;
 		children = new  bTreeNode * [degree + 1];
@@ -124,7 +124,7 @@ public:
 	//what if the split was called from the root node. this means an increase in the height of the tree. 
 	bTree(int degree) { //constructor for the tree. Since we need to specify the size during the run time for creation.
 		root = NULL;
-		tDeg = degree;
+		tDeg = degree - 1;
 		hashFound = 0;
 		insertInNew = false;
 		hashExists = false;
@@ -325,7 +325,7 @@ public:
 				}
 				//calling an insert for the child now.
 				//insert the new key into the child.
-			
+
 				NotFull(adder->children[index + 1], hash, item);
 			}
 		}
@@ -430,7 +430,7 @@ public:
 			if (indexKey == input->keyNum) {
 				subTree = true;
 			}
-			if (input->children[indexKey]->keyNum < (input->degree/2)-1) {
+			if (input->children[indexKey]->keyNum < (input->degree / 2) - 1) {
 				FillChild(input, indexKey);
 			}
 			if (subTree && indexKey > input->keyNum) {
@@ -452,13 +452,13 @@ public:
 		//getting a hash value to be used.
 		int tempHash = input->keys[index].head->hash;
 		//if child has atleast t keys.
-		if (input->children[index]->keyNum >= input->degree/2) {
+		if (input->children[index]->keyNum >= input->degree / 2) {
 			KeyList predecessor = getPredecessor(input, index); //get the predecessor. contains both hash and itemName.
 			input->keys[index] = predecessor;
 			Delete(input->children[index], predecessor.head->hash);
 		}
 		//examine the next child if the previous child does not meet the criteria.
-		else if (input->children[index + 1]->keyNum >= input->degree/2) {
+		else if (input->children[index + 1]->keyNum >= input->degree / 2) {
 			//get successor.
 			KeyList successor = getSuccessor(input, index);
 			input->keys[index] = successor;
@@ -486,10 +486,10 @@ public:
 		return finder->keys[0];
 	}
 	void FillChild(bTreeNode* input, int index) { //method to complete a child node that has less than t-1 keys.
-		if (index != 0 && input->children[index - 1]->keyNum >= input->degree/2) {
+		if (index != 0 && input->children[index - 1]->keyNum >= input->degree / 2) {
 			borrowPrev(input, index);
 		}
-		else if (index != input->keyNum && input->children[index + 1]->keyNum >= input->degree/2) {
+		else if (index != input->keyNum && input->children[index + 1]->keyNum >= input->degree / 2) {
 			borrowNext(input, index);
 		}
 		else {
@@ -594,5 +594,118 @@ public:
 			index++;
 		}
 		return index;
+	}
+	//another approach at insertion.
+	void insert2(int hash, string item) {
+		root = insert(hash, item, root);
+	}
+	bTreeNode* insert(int hash, string item, bTreeNode* root) {
+		KeyList i;
+		bTreeNode* c = NULL; //a node to hold value i guess.
+		bTreeNode* n; //new node im guessing.
+		int condition = setAValue(hash, item, root, i, &c);
+		if (condition) {
+			n = new bTreeNode(tDeg,true);
+			n->keyNum = 1;
+			n->keys[1] = i;
+			n->children[0] = root;
+			n->children[1] = c;
+			return n;
+		}
+		return root; //retrun the root back to be set accordingly.
+	}
+	int setAValue(int hash, string item,bTreeNode* newNode, KeyList& value, bTreeNode** c) { //sets a value inside the node and then returns a zero or one. Acts as a boolean.
+		int k = 0;
+		if (newNode == NULL) {
+			value.insert(hash, item);
+			c = NULL;
+			return 1;
+		}
+		else {
+			if (SearchForNode(hash,newNode,k)) {
+				newNode->keys[hashFound].insert(hash, item);
+				//k = hashFound;
+			}
+			else if(setAValue(hash,item,newNode->children[k],value,c)){
+				if (newNode->keyNum < tDeg) {
+					nodeFill2(value, *c, newNode, k);
+					return 0;
+				}
+				else {
+					split2(hash, item, *c, newNode, k, value, c);
+					return 1;
+				}
+			}
+			return 0;
+		}
+	}
+	bTreeNode* Search(int hash, bTreeNode*, int& index) {
+
+	}
+	int SearchForNode(int hash, bTreeNode* input, int& index) { //dont need to searchfor this now as we alr have a hash finding function already.
+		if (hash < input->keys[1].head->hash) {
+			index = 0;
+			return 0;
+		}
+		else {
+			index = input->keyNum ;
+			while (hash < input->keys[index].head->hash && index>1) {
+				index--;
+			}
+			if (hash == input->keys[index].head->hash) {
+				hashFound = index;
+				return 1;
+			}
+			else {
+				return 0;
+			}
+		}
+	}
+	void nodeFill2(KeyList &value, bTreeNode* input, bTreeNode* input2, int index) {
+		int i = 0;
+		for (i = input2->keyNum;i > index;i--) {
+			input2->keys[i + 1] = input2->keys[i]; //shift keys
+			input2->children[i + 1] = input2->children[i]; //shift children.
+		}
+		input2->keys[index + 1].insert(value.head->hash, value.head->itemName);
+		input2->children[index + 1] = input;
+		input2->keyNum++;
+	}
+	void split2(int hash, string item, bTreeNode* input, bTreeNode* input2, int index, KeyList& value, bTreeNode** New) {
+		int i = 0, middle = 0;
+		if (index <= ceil((tDeg*1.0)/2)) {
+			middle = ceil((tDeg * 1.0) / 2);
+		}
+		else {
+			middle = ceil((tDeg * 1.0) / 2) + 1;
+		}
+
+		 *New = new bTreeNode(tDeg, false);
+		for (i = middle + 1;i <= tDeg;i++) {
+			(*New)->keys[i - middle] = input2->keys[i];
+			(*New)->children[i - middle] = input2->children[i];
+		}
+		(*New)->keyNum = tDeg - middle;
+		input2->keyNum = middle;
+		if (index <= ceil((tDeg * 1.0) / 2)) {
+			nodeFill2(value, input, input2, index);
+		}
+		else {
+			nodeFill2(value, input, *New, index-middle);
+		}
+		value = input2->keys[input2->keyNum];
+		(*New)->children[0] = input2->children[input2->keyNum];
+		input2->keyNum--;
+	}
+	void Display(bTreeNode* root) {
+		int i = 0;
+		if (root != NULL) {
+			for (i = 0;i < root->keyNum;i++) {
+				Display(root->children[i]);
+				cout << "index: " << i + 1 << " , ";
+				root->keys[i + 1].print();
+			}
+			Display(root->children[i]);
+		}
 	}
 };
