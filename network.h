@@ -78,7 +78,8 @@ public:
             cout<<"Max limit reached"<<endl;
         }
 
-
+        //INITIALIZE ITS ROUTING TABLE
+        //UPDATE THE ROUTING TABLE OF THE REST OF THE NODES
         //ADD FUNCTIONALITY TO BALANCE FILE DISTRIBUTION AFTER ADDITION OF A PC (AFTER B-TREES ARE MADE)
     }
 
