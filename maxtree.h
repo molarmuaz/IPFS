@@ -6,13 +6,14 @@ using namespace std;
 //key struct
 //the key structure is required to store a hash and a string value of the item name.
 struct keyNode {
-	int hash; //using hash as a standalone for now with a null value.
+	string hash; //using hash as a standalone for now with a null value.
 	string itemName; //item name is the name of the file we will have to search for.
 	keyNode* next; //the next pointer in the key node to point to the next node in the key list class.
 	//for the default constructor we will initialize both strings to be empty.
-	void keySetDetails(int a = -1, string b = " ") {
+	void keySetDetails(string a = " ", string b = " ") {
 		hash = a;
 		itemName = b;
+		next = nullptr;
 	}
 };
 class KeyList {
@@ -21,36 +22,36 @@ public:
 	int counter; //counter variable that helps keep track of how many inserted elements.
 	KeyList() {
 		//default constructor that will allocate null value to root and set counter to zero.
-		head = NULL;
+		head = nullptr;
 		counter = 0;
 	}
 	bool isEmpty() {
-		if (head == NULL) {
+		if (head == nullptr) {
 			return true;
 		}
 		return false;
 	}
 	//insert a new node
-	void insert(int hash, string file) {
+	void insert(string hash, string file) {
 
 		if (isEmpty()) {
 			head = new keyNode;
 			head->hash = hash;
 			head->itemName = file;
-			head->next = NULL;
+			head->next = nullptr;
 			counter++;
 		}
 		else {
 			keyNode* add = new keyNode;
 			add->hash = hash;
 			add->itemName = file;
-			add->next = NULL;
+			add->next = nullptr;
 			keyNode* shift = head;
-			while (shift->next != NULL) {
+			while (shift->next != nullptr) {
 				shift = shift->next;
 			}
 			shift->next = add;
-			add = NULL;
+			add = nullptr;
 			delete add;
 			counter++;
 		}
@@ -65,7 +66,9 @@ public:
 		}
 	}
 	void Remove() { //FIFO
-
+		if (isEmpty()) {
+			return;
+		}
 		keyNode* temp = new keyNode;
 		temp = head;
 		head = head->next;
@@ -82,7 +85,7 @@ public:
 	KeyList operator =(KeyList& input) {
 		this->clear();
 		keyNode* point = input.head;
-		while (point != NULL) {
+		while (point != nullptr) {
 			this->insert(point->hash, point->itemName);
 			point = point->next;
 		}
@@ -124,14 +127,14 @@ public:
 	//what if the split was called from the root node. this means an increase in the height of the tree. 
 	bTree(int degree) { //constructor for the tree. Since we need to specify the size during the run time for creation.
 		root = NULL;
-		tDeg = degree - 1;
+		tDeg = degree-1;
 		hashFound = 0;
 		insertInNew = false;
 		hashExists = false;
 		height = 0;
 		//what if the height of the tree exceeds 2. In this case we cannot follow the common insertion conventions.
 	}
-	void insert(int hash, string item) {
+	void insert(string hash, string item) {
 		//search for hash to avoid any mishaps in the insertions.
 		//if hash exists then we will run the hash found function for every node to find the correct position for the hash.
 		// else we will skip all hash found functions since the following hash will be a new hash.
@@ -181,7 +184,7 @@ public:
 		}
 	}
 	//method to split children
-	void split(bTreeNode* caller, int cIndex, bTreeNode* input, int hash, string item) {
+	void split(bTreeNode* caller, int cIndex, bTreeNode* input, string hash, string item) {
 		//the parametre conventions are as follows-> caller is the node that will be used to adjust, cIndex is the index where the current child lies
 		//input is the node that will be used as the reference to fill values for a new node that is to be created.
 		bTreeNode* newNode = new bTreeNode(input->degree, input->leaf);
@@ -272,7 +275,7 @@ public:
 		caller->keyNum += 1;
 	}
 	//method to insert into a non full node i.e could be a leaf or could not be a leaf.
-	void NotFull(bTreeNode* adder, int hash, string item) {
+	void NotFull(bTreeNode* adder, string hash, string item) {
 		//initializing value to right most element.
 		int index = adder->keyNum - 1;
 
@@ -348,7 +351,7 @@ public:
 
 	}
 	//search in the tree
-	bool search(bTreeNode* find, int hash, string& path) {
+	bool search(bTreeNode* find, string hash, string& path) {
 		int i = 0; //searching index
 		while (i<find->keyNum && hash > find->keys[i].head->hash) {
 			i++;
@@ -363,7 +366,7 @@ public:
 
 		return search(find->children[i], hash, path);
 	}
-	bool searchForHash(bTreeNode* find, int hash) {
+	bool searchForHash(bTreeNode* find, string hash) {
 		int i = 0;
 		while (i<find->keyNum && hash > find->keys[i].head->hash) {
 			i++;
@@ -382,7 +385,7 @@ public:
 		}
 
 	}
-	bool isNewHash(bTreeNode* find, int hash) {
+	bool isNewHash(bTreeNode* find, string hash) {
 		int i = 0;
 		if (root != NULL) {
 			while (i<find->keyNum && hash > find->keys[i].head->hash) {
@@ -405,7 +408,7 @@ public:
 
 	}
 	//deleting files and folders. //Need to ensure that the node does not get too small during deletion.
-	void Delete(bTreeNode* input, int hash) {
+	void Delete(bTreeNode* input, string hash) {
 		//finding the index of the key that has to be removed.
 		int indexKey = getIndexOfKey(input, hash);
 
@@ -450,7 +453,7 @@ public:
 	}
 	void InternalRemove(bTreeNode* input, int index) { //remove a value from an internal node
 		//getting a hash value to be used.
-		int tempHash = input->keys[index].head->hash;
+		string tempHash = input->keys[index].head->hash;
 		//if child has atleast t keys.
 		if (input->children[index]->keyNum >= input->degree / 2) {
 			KeyList predecessor = getPredecessor(input, index); //get the predecessor. contains both hash and itemName.
@@ -588,18 +591,18 @@ public:
 		delete sibling;
 		sibling = NULL;
 	}
-	int getIndexOfKey(bTreeNode* input, int hash) {
+	int getIndexOfKey(bTreeNode* input, string hash) {
 		int index = 0;
-		while (index < input->keyNum && input->keys[index].head->hash < hash) {
+		while (index < input->keyNum && hashing(input->keys[index].head->hash) < hashing(hash)) {
 			index++;
 		}
 		return index;
 	}
 	//another approach at insertion.
-	void insert2(int hash, string item) {
+	void insert2(string hash, string item) {
 		root = insert(hash, item, root);
 	}
-	bTreeNode* insert(int hash, string item, bTreeNode* root) {
+	bTreeNode* insert(string hash, string item, bTreeNode* root) {
 		KeyList i;
 		bTreeNode* c = NULL; //a node to hold value i guess.
 		bTreeNode* n; //new node im guessing.
@@ -614,7 +617,7 @@ public:
 		}
 		return root; //retrun the root back to be set accordingly.
 	}
-	int setAValue(int hash, string item,bTreeNode* newNode, KeyList& value, bTreeNode** c) { //sets a value inside the node and then returns a zero or one. Acts as a boolean.
+	int setAValue(string hash, string item,bTreeNode* newNode, KeyList& value, bTreeNode** c) { //sets a value inside the node and then returns a zero or one. Acts as a boolean.
 		int k = 0;
 		if (newNode == NULL) {
 			value.insert(hash, item);
@@ -639,25 +642,30 @@ public:
 			return 0;
 		}
 	}
-	bTreeNode* Search(int hash, bTreeNode*, int& index) {
+	bTreeNode* Search(string hash, bTreeNode*, int& index) {
 
 	}
-	int SearchForNode(int hash, bTreeNode* input, int& index) { //dont need to searchfor this now as we alr have a hash finding function already.
-		if (hash < input->keys[1].head->hash) {
-			index = 0;
-			return 0;
-		}
-		else {
-			index = input->keyNum ;
-			while (hash < input->keys[index].head->hash && index>1) {
-				index--;
-			}
-			if (hash == input->keys[index].head->hash) {
-				hashFound = index;
-				return 1;
+	int SearchForNode(string hash, bTreeNode* input, int& index) { //dont need to searchfor this now as we alr have a hash finding function already.
+		if (input != NULL) {
+			if (hashing(hash) < hashing(input->keys[1].head->hash)) {
+				cout << input->keys[1].head->itemName << endl;
+				index = 0;
+				return 0;
 			}
 			else {
-				return 0;
+				index = input->keyNum;
+				while (hashing(hash) < hashing(input->keys[index].head->hash) && index > 1) {
+					cout << input->keys[index].head->itemName << endl;
+					index--;
+				}
+				if (hashing(hash) == hashing(input->keys[index].head->hash)) {
+					cout << input->keys[index].head->itemName << endl;
+					hashFound = index;
+					return 1;
+				}
+				else {
+					return 0;
+				}
 			}
 		}
 	}
@@ -667,11 +675,12 @@ public:
 			input2->keys[i + 1] = input2->keys[i]; //shift keys
 			input2->children[i + 1] = input2->children[i]; //shift children.
 		}
+		input2->keys[index + 1].clear();
 		input2->keys[index + 1].insert(value.head->hash, value.head->itemName);
 		input2->children[index + 1] = input;
 		input2->keyNum++;
 	}
-	void split2(int hash, string item, bTreeNode* input, bTreeNode* input2, int index, KeyList& value, bTreeNode** New) {
+	void split2(string hash, string item, bTreeNode* input, bTreeNode* input2, int index, KeyList& value, bTreeNode** New) {
 		int i = 0, middle = 0;
 		if (index <= ceil((tDeg*1.0)/2)) {
 			middle = ceil((tDeg * 1.0) / 2);
@@ -709,10 +718,10 @@ public:
 		}
 	}
 	//deletion for the new insertion algorithm start here.
-	void remove(int hash) {
+	void remove(string hash) {
 		root = remove(hash, root);
 	}
-	bTreeNode* remove(int hash, bTreeNode* root) {
+	bTreeNode* remove(string hash, bTreeNode* root) {
 		bTreeNode* temp = NULL;
 		if (!findIndex(hash, root)) {
 			cout << "THE FILES DO NOT EXIST IN THE SYSTEM" << endl;
@@ -726,10 +735,10 @@ public:
 		}
 		return root;
 	}
-	bool findIndex(int hash, bTreeNode* input) {
+	bool findIndex(string hash, bTreeNode* input) {
 		int i;
 		bool condition;
-		if (root == NULL) {
+		if (input == NULL) {
 			return false;
 		}
 		else {
@@ -750,7 +759,7 @@ public:
 				condition = findIndex(hash, input->children[i]);
 			}
 			if (input->children[i]!=NULL) {
-				if (input->children[i]->keyNum < tDeg) {
+				if (input->children[i]->keyNum < ceil((tDeg*1.0)/2)) {
 					Undo(input, i);
 				}
 			}
@@ -779,6 +788,7 @@ public:
 				left(input, 1);
 			}
 			else {
+				cout << input->keys[1].head->itemName << endl;
 				Combine(input, 1);
 			}
 		}
@@ -862,4 +872,29 @@ public:
 		delete placeholder;
 	}
 
+	int hashing(string hash, int max = -1) //hashing function is part of the b tree.
+	{
+		char x;
+		int result = 0;
+		for (int i = 0; i < 3; i++)
+		{
+			x = hash[2 - i];
+			if (x >= 97 && x <= 102)
+			{
+				result += (int(x) - 87) * pow(16, i);
+			}
+			else
+			{
+				result += (int(x) - 48) * pow(16, i);
+			}
+		}
+
+		if (max != -1)
+		{
+			return (result % max);
+		}
+		//cout << "HASH: " << hash << endl;
+		cout << "RETURNED VALUE: " << result << endl;
+		return result;
+	}
 };
