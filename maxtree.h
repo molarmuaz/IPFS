@@ -100,6 +100,82 @@ public:
 		}
 	}
 };
+struct FileNode {
+	string data;
+	FileNode* next;
+};
+
+class FileList {
+public:
+	int counter;
+	FileNode* head;
+
+	FileList() {
+		head = NULL;
+		counter = 0;
+	}
+	///insertions
+	bool isEmpty() {
+		if (head == NULL) {
+			return true;
+		}
+		return false;
+	}
+	void insertEND(string val) {
+		if (isEmpty()) {
+			head = new FileNode;
+			head->data = val;
+			head->next = nullptr;
+			counter++;
+		}
+		else {
+			FileNode* add = new FileNode;
+			add->data = val;
+			add->next = nullptr;
+			FileNode* shift = head;
+			while (shift->next != NULL) {
+				shift = shift->next;
+			}
+			shift->next = add;
+			add = nullptr;
+			delete add;
+			counter++;
+		}
+	}
+	///insertions
+	///deletions
+	void Remove() { //FIFO
+		if (isEmpty()) {
+			return;
+		}
+		FileNode* temp = new FileNode;
+		temp = head;
+		head = head->next;
+		counter--;
+		delete temp;
+
+	}
+	void clear() {
+		int sizeTemp = counter;
+		for (int i = 0; i < sizeTemp; i++) {
+			Remove();
+		}
+	}
+	///deletions
+	/// display
+	void display(string extract) {
+		FileNode* disp = head;
+		for (int i = 0;i < counter;i++) {
+			extract = disp->data;
+			disp = disp->next;
+		}
+	}
+	///display
+	~FileList() {
+		delete head;
+		head = nullptr;
+	}
+};
 //b tree node
 //contains a structure array of the key.
 //contains a pointer array of the children subject to degree of the tree.
@@ -909,21 +985,26 @@ public:
 		//cout << "RETURNED VALUE: " << result << endl;
 		return result;
 	}
-	void Redistribute(bTreeNode* root,bTree& newTree,int r1,int r2,int iSpace) { //r1 and r2 are the ranges of the machines.
+	void Redistribute(bTreeNode* root,bTree& newTree,int r1,int r2,int iSpace,FileList& hashes) { //r1 and r2 are the ranges of the machines.
 		int i = 0;
 		if (root != NULL) {
 			for (i = 0;i < root->keyNum;i++) {
-				Redistribute(root->children[i],newTree,r1,r2,iSpace);
-				if (hashing(root->keys[i + 1].head->hash, iSpace) > r1 && hashing(root->keys[i + 1].head->hash, iSpace) < r2) {
+				Redistribute(root->children[i],newTree,r1,r2,iSpace,hashes);
+				if (hashing(root->keys[i + 1].head->hash, iSpace) > r1 && hashing(root->keys[i + 1].head->hash, iSpace) <= r2) {
 					newTree.copyList(root->keys[i + 1]);
-					this->remove(root->keys[i + 1].head->hash);
+					hashes.insertEND(root->keys[i + 1].head->hash);
+				}
+				if (root == NULL) {
+					break;
 				}
 			}
-			Redistribute(root->children[i], newTree, r1, r2, iSpace);
+			if (root->children[i]!=NULL) {
+				Redistribute(root->children[i], newTree, r1, r2, iSpace,hashes);
+			}
 		}
 	}
-	void Transfer(bTree& newTree, int r1, int r2, int iSpace) {
-		Redistribute(root, newTree, r1, r2, iSpace);
+	void Transfer(bTree& newTree, int r1, int r2, int iSpace,FileList& hashes) {
+		Redistribute(root, newTree, r1, r2, iSpace,hashes);
 	}
 	//new tree will call a function to traverse through a list. and copy all of its contents.
 	void copyList(KeyList list) {
@@ -946,6 +1027,13 @@ public:
 			ExtractFiles(find->children[index], hash, path, index);
 		}
 
+	}
+	void RemoveRange(FileList& hashes) {
+		FileNode* point = hashes.head;
+		while (point != NULL) {
+			this->remove(point->data);
+			point = point->next;
+		}
 	}
 	friend class KeyList;
 };
