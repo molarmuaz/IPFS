@@ -156,8 +156,7 @@ public:
 		{
 			// The routing table is empty, so set the new node as both head and tail
 			fileRange temp2 = parent->getRange(); //gets the range of the circular linked list node
-			temp->range.start = temp2.end;
-			temp->range.end = temp2.end;
+			temp->range.start = temp2.end+1;
 			head = temp;
 			tail = temp;
 			size++;
