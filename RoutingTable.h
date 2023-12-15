@@ -1,4 +1,5 @@
 #pragma once
+#pragma once
 #include <iostream>
 #include <string.h>
 #include <openssl/evp.h>
@@ -12,10 +13,10 @@ using namespace std;
 
 
 
- string readFileToString( ifstream& inputStream) {
+string readFileToString(ifstream& inputStream) {
 
-	 string line;
-	 string content;
+	string line;
+	string content;
 
 	// Check if file opened successfully
 	if (!inputStream.is_open()) {
@@ -32,7 +33,7 @@ using namespace std;
 
 	return content;
 }
- string getSHA1HashFile(ifstream& inputStream) {
+string getSHA1HashFile(ifstream& inputStream) {
 
 	const  string& data = readFileToString(inputStream);
 	// Create the SHA1 context
@@ -48,9 +49,9 @@ using namespace std;
 	EVP_DigestFinal_ex(ctx, hash, &hash_len);
 
 	// Convert the hash to a hexadecimal string
-	 stringstream ss;
+	stringstream ss;
 	for (int i = 0; i < SHA_DIGEST_LENGTH; ++i) {
-		ss <<  hex <<  setfill('0') <<  setw(2) << (int)hash[i];
+		ss << hex << setfill('0') << setw(2) << (int)hash[i];
 	}
 
 	// Clean up the SHA1 context
@@ -77,16 +78,18 @@ int hashing(string hash, int max = -1)  //takes a hash and converts it to int
 
 	if (max != -1)
 	{
-		return (result % max);
+		int id = pow(2, max);
+		return (result % id);
 	}
 	return result;
 }
 
 
+
 struct routingNode {
 	int identifier; //the key 
 	node* machine;  //the address of that node
-		
+
 	fileRange range; //the range of that node
 
 	routingNode* next = nullptr; // next routingTable node
@@ -102,15 +105,21 @@ public:
 	routingNode* tail; //end of the routing table
 	int size; //number of nodes in the routing table (used for calculation of linked list nodes)
 
+	RoutingTable()
+	{
+		size = 0;
+	}
+
 	RoutingTable(node* a) : head(nullptr), tail(nullptr) {
 		parent = a;
 		size = 0;
 	}
 
-
-	void insertionSort(routingNode* head) {
+	void insertionSort(routingNode* head) 
+	{
 		routingNode* curr = head;
-		while (curr) {
+		while (curr) 
+		{
 			routingNode* next = curr->next;
 			routingNode* prev = nullptr;
 			routingNode* temp = curr;
@@ -130,72 +139,75 @@ public:
 		}
 	}
 
+	
 
-
-	void insertEntry(node* a) {
+	void insertEntry(node* a) 
+	{
 		routingNode* temp = new routingNode;
 		temp->machine = a;
 		temp->identifier = a->getID();
 		temp->next = nullptr;
 		temp->prev = nullptr;
 		temp->range.start = 0;
-		temp->range.end = 0;
+		temp->range.end = a->getID();
 
 
-		if (!head || size == 0) {
+		if (!head || size == 0) 
+		{
 			// The routing table is empty, so set the new node as both head and tail
 			fileRange temp2 = parent->getRange(); //gets the range of the circular linked list node
-			temp->range.start = temp2.start;
+			temp->range.start = temp2.end;
 			temp->range.end = temp2.end;
 			head = temp;
 			tail = temp;
 			size++;
 		}
 
-		else {
-			
+		else 
+		{
+
 			temp->prev = tail;
 			tail->next = temp;
 			tail = temp;
 			tail->range.start = (tail->prev->range.end + 1); //sets the starting range of the new node
-			tail->range.end = (head->range.start - 1); //sets the ending range of the new node
 			insertionSort(head); //sorts the linked list in ascending order on the basis of machine IDs
 			size++;
 		}
-		
+
 	};
 
 
-	
 
-	void deleteEntry(int id) {
-		
-		routingNode* pre = head, *current = head;
 
-		 for (int i = 1; i < 1; i++)
+	void deleteEntry(int id) 
+	{
 
-			{
-				pre = current;
-				current = current->next;
-			}
+		routingNode* pre = head, * current = head;
 
-			pre->next = current->next;
+		for (int i = 1; i < 1; i++)
+		{
+			pre = current;
+			current = current->next;
+		}
 
-			current->next->prev = pre;
+		pre->next = current->next;
 
-			pre->next->range.start = current->range.start; //works on the principle of consitent hashing
+		current->next->prev = pre;
 
-			delete current;
+		pre->next->range.start = current->range.start; //works on the principle of consitent hashing
 
-			current = NULL;
-			
-			size--;
+		delete current;
+
+		current = NULL;
+
+		size--;
 	};
 
 	void print() {
 		cout << "The routing table of this node is: " << endl;
 		routingNode* curr = head;
-		while (curr) {
+		while (curr) 
+		{
 			cout << "Machine " << curr->identifier << endl;
 			cout << "File range: " << endl;
 			cout << "Starting value: " << curr->range.start << endl;
@@ -208,33 +220,51 @@ public:
 
 
 	//function utilized in command number 5 of the Deliverable.
-	node* findFileViaRouting(int key, ifstream& file) {
+	node* findFileViaRouting(int key, ifstream& file) 
+	{
 		int fileRange = hashing(getSHA1HashFile(file));
 		routingNode* curr = head;
-		unsigned int nodeRange = 0;  //ensures it stays positive, even for head of network
-		while (curr) {
-			
-			nodeRange = curr->range.end - curr->range.start;
-				
-			if (fileRange > nodeRange) {
+		int nodeRange = 0;
+		while (curr) 
+		{
 
+			nodeRange = curr->range.end - curr->range.start;
+
+			if (fileRange > nodeRange) 
+			{
 				cout << "Machine " << curr->identifier << " --> ";
 				curr = curr->next;
 
 				continue;
 			}
 
-			else {
+			else 
+			{
 				cout << "Insertion path found. " << endl;
 				return curr->machine;
 			}
 		}
 	}
+
+	node* findNode(int key) {
+		routingNode* curr = head;
+		while (curr) {
+
+
+			if (key > curr->range.start && key < curr->range.end) {
+				cout << "Insertion path found. " << endl;
+				return curr->machine;
+			}
+
+			else {
+				cout << "Machine " << curr->identifier << " --> ";
+				curr = curr->next;
+				continue;
+			}
+
+		}
+	}
 };
-
-
-
-
 
 
 
