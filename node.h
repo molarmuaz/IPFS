@@ -101,4 +101,9 @@ public:
         range.start = a;
         range.end = id;
     }
+
+    string bTreeDisplay()
+    {
+        directory.Display(directory.root);
+    }
 };
