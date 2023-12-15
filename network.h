@@ -108,6 +108,11 @@ public:
         }    
     }
 
+    bool activeCheck(int x)
+    {
+        return activeIDs[x];
+    }
+
     int hashing(string hash, int max = -1)
     {
         char x;
@@ -211,7 +216,17 @@ public:
 
         string hash = getSHA1HashFile(path);
         int key = hashing(hash);
-        node* a = head->getRouter().findNode(key);
+
+        node* a;
+
+        if (!key || key > head->getStart())
+        {
+            a = head;
+        }
+        else
+        {
+            a = head->getRouter().findNode(key);
+        }
 
 
         a->insert(path, hash);
@@ -220,7 +235,16 @@ public:
     void removeFile(string hash)
     {
         int key = hashing(hash, IDspace);
-        node* a = head->getRouter().findNode(key);
+        node* a;
+
+        if (!key || key > head->getStart())
+        {
+            a = head;
+        }
+        else
+        {
+            a = head->getRouter().findNode(key);
+        }
 
         a->remove(hash);
     }
@@ -228,7 +252,16 @@ public:
     string search(string hash)
     {
         int key = hashing(hash, IDspace);
-        node* a = head->getRouter().findNode(key);
+        node* a;
+
+        if (!key || key > head->getStart())
+        {
+            a = head;
+        }
+        else
+        {
+            a = head->getRouter().findNode(key);
+        }
 
         return a.search(hash);
     }
