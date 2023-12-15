@@ -265,4 +265,21 @@ public:
 
         return a.search(hash);
     }
+
+ string displayBTree(int key)
+    {
+        
+        node* a;
+
+        if (!key || key > head->getStart())
+        {
+            a = head;
+        }
+        else
+        {
+            a = head->getRouter().findNode(key);
+        }
+
+        return a->bTreeDisplay();
+    }
 };
