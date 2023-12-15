@@ -91,6 +91,13 @@ public:
 		}
 		return *this;
 	}
+	/*void insertListInTree(bTree& newTree) {
+		keyNode* point = head;
+		while (point != nullptr) {
+			newTree.insert2(point->hash, point->itemName);
+			point = point->next;
+		}
+	}*/
 };
 //b tree node
 //contains a structure array of the key.
@@ -106,7 +113,7 @@ public:
 		keys = new KeyList[deg+1];
 		degree = deg;
 		keyNum = 0;
-		children = new  bTreeNode * [degree + 1];
+		children = new  bTreeNode * [degree+1];
 		leaf = isLeaf;
 	}
 	//tree node functionalities since we cant break the actual call structure of a b tree using the universal method conventions.
@@ -127,7 +134,7 @@ public:
 	//what if the split was called from the root node. this means an increase in the height of the tree. 
 	bTree(int degree) { //constructor for the tree. Since we need to specify the size during the run time for creation.
 		root = NULL;
-		tDeg = degree-1;
+		tDeg = degree;
 		hashFound = 0;
 		insertInNew = false;
 		hashExists = false;
@@ -771,6 +778,7 @@ public:
 		for (i = index + 1;i <= input->keyNum;i++) {
 			input->keys[i - 1] = input->keys[i];
 			input->children[i - 1] = input->children[i];
+			cout << input->keys[i - 1].head->itemName << endl;
 		}
 		input->keyNum--;
 	}
@@ -780,11 +788,13 @@ public:
 		while (temp->children[0]) {
 			temp = temp->children[0];
 		}
+		//temp->keyNum--;
 		input->keys[value] = temp->keys[1];
 	}
-	void Undo(bTreeNode* input, int value) {
+	void Undo(bTreeNode* input, int value) { //restore the value
+		cout << input->keys[1].head->hash << endl;
 		if (value == 0) {
-			if (input->children[value]->keyNum > ceil((tDeg * 1.0) / 2)) {
+			if (input->children[1]->keyNum > ceil((tDeg * 1.0) / 2)) {
 				left(input, 1);
 			}
 			else {
@@ -810,6 +820,7 @@ public:
 					left(input, value + 1);
 				     }
 					else {
+						cout << input->keys[1].head->itemName << endl;
 						Combine(input, value);
 					}
 				}
@@ -826,7 +837,7 @@ public:
 		}
 		placeholder->children[1] = placeholder->children[0];
 		placeholder->keyNum++;
-		placeholder->keys[1] = placeholder->keys[value];
+		placeholder->keys[1] = input->keys[value];
 		placeholder = input->children[i - 1];
 		input->keys[value] = placeholder->keys[placeholder->keyNum];
 		input->children[value]->children[0] = placeholder->children[placeholder->keyNum];
@@ -853,16 +864,18 @@ public:
 		bTreeNode* placeholder;
 		bTreeNode* placeholder2;
 		placeholder = input->children[value];
+		cout << "placeholder1: " << placeholder->keys[1].head->itemName << endl;
 		placeholder2 = input->children[value - 1];
+		cout << "placeholder1: " << placeholder2->keys[1].head->itemName << endl;
 		placeholder2->keyNum++;
 		placeholder2->keys[placeholder2->keyNum] = input->keys[value];
 		if (placeholder2->children[0] != NULL) {
 			placeholder2->children[placeholder2->keyNum] = placeholder->children[0];
 		}
 		for (i = 1;i <= placeholder->keyNum;i++) {
-			placeholder2->keyNum++;
-			placeholder2->keys[placeholder2->keyNum] = placeholder->keys[i];
-			placeholder2->children[placeholder2->keyNum] = placeholder->children[i];
+				placeholder2->keyNum++;
+				placeholder2->keys[placeholder2->keyNum] = placeholder->keys[i];
+				placeholder2->children[placeholder2->keyNum] = placeholder->children[i];
 		}
 		for (i = value;i < input->keyNum;i++) {
 			input->keys[i] = input->keys[i + 1];
@@ -894,7 +907,33 @@ public:
 			return (result % max);
 		}
 		//cout << "HASH: " << hash << endl;
-		cout << "RETURNED VALUE: " << result << endl;
+		//cout << "RETURNED VALUE: " << result << endl;
 		return result;
 	}
+	void Redistribute(bTreeNode* root,bTree& newTree,int r1,int r2,int iSpace) { //r1 and r2 are the ranges of the machines.
+		int i = 0;
+		if (root != NULL) {
+			for (i = 0;i < root->keyNum;i++) {
+				Redistribute(root->children[i],newTree,r1,r2,iSpace);
+				if (hashing(root->keys[i + 1].head->hash, iSpace) > r1 && hashing(root->keys[i + 1].head->hash, iSpace) < r2) {
+					newTree.copyList(root->keys[i + 1]);
+					this->remove(root->keys[i + 1].head->hash);
+				}
+			}
+			Redistribute(root->children[i], newTree, r1, r2, iSpace);
+		}
+	}
+	void Transfer(bTree& newTree, int r1, int r2, int iSpace) {
+		Redistribute(root, newTree, r1, r2, iSpace);
+	}
+	//new tree will call a function to traverse through a list. and copy all of its contents.
+	void copyList(KeyList list) {
+		keyNode* point = list.head;
+		while (point != nullptr) {
+			this->insert2(point->hash, point->itemName);
+			point = point->next;
+		}
+	}
+	friend class KeyList;
 };
+
