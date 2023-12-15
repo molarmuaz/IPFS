@@ -766,7 +766,7 @@ public:
 				condition = findIndex(hash, input->children[i]);
 			}
 			if (input->children[i]!=NULL) {
-				if (input->children[i]->keyNum < ceil((tDeg*1.0)/2)) {
+				if (input->children[i]->keyNum < ceil((tDeg*1.0)/2)-1) {
 					Undo(input, i);
 				}
 			}
