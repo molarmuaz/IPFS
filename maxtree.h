@@ -165,7 +165,7 @@ public:
 	/// display
 	void display(string extract) {
 		FileNode* disp = head;
-		for (int i = 0;i < counter;i++) {
+		for (int i = 0; i < counter; i++) {
 			extract = disp->data;
 			disp = disp->next;
 		}
@@ -187,10 +187,10 @@ public:
 	bTreeNode** children; //the children pointer array that will store the next pointer added to the tree.
 	bool leaf; //indicator if a node is leaf node or no.
 	bTreeNode(int deg, bool isLeaf) {
-		keys = new KeyList[deg+1];
+		keys = new KeyList[deg + 1];
 		degree = deg;
 		keyNum = 0;
-		children = new  bTreeNode * [degree+1];
+		children = new  bTreeNode * [degree + 1];
 		leaf = isLeaf;
 	}
 	//tree node functionalities since we cant break the actual call structure of a b tree using the universal method conventions.
@@ -692,7 +692,7 @@ public:
 		bTreeNode* n; //new node im guessing.
 		int condition = setAValue(hash, item, root, i, &c);
 		if (condition) {
-			n = new bTreeNode(tDeg,true);
+			n = new bTreeNode(tDeg, true);
 			n->keyNum = 1;
 			n->keys[1] = i;
 			n->children[0] = root;
@@ -701,7 +701,7 @@ public:
 		}
 		return root; //retrun the root back to be set accordingly.
 	}
-	int setAValue(string hash, string item,bTreeNode* newNode, KeyList& value, bTreeNode** c) { //sets a value inside the node and then returns a zero or one. Acts as a boolean.
+	int setAValue(string hash, string item, bTreeNode* newNode, KeyList& value, bTreeNode** c) { //sets a value inside the node and then returns a zero or one. Acts as a boolean.
 		int k = 0;
 		if (newNode == NULL) {
 			value.insert(hash, item);
@@ -709,11 +709,11 @@ public:
 			return 1;
 		}
 		else {
-			if (SearchForNode(hash,newNode,k)) {
+			if (SearchForNode(hash, newNode, k)) {
 				newNode->keys[hashFound].insert(hash, item);
 				//k = hashFound;
 			}
-			else if(setAValue(hash,item,newNode->children[k],value,c)){
+			else if (setAValue(hash, item, newNode->children[k], value, c)) {
 				if (newNode->keyNum < tDeg) {
 					nodeFill2(value, *c, newNode, k);
 					return 0;
@@ -726,7 +726,7 @@ public:
 			return 0;
 		}
 	}
-	
+
 	int SearchForNode(string hash, bTreeNode* input, int& index) { //dont need to searchfor this now as we alr have a hash finding function already.
 		if (input != NULL) {
 			if (hashing(hash) < hashing(input->keys[1].head->hash)) {
@@ -751,9 +751,9 @@ public:
 			}
 		}
 	}
-	void nodeFill2(KeyList &value, bTreeNode* input, bTreeNode* input2, int index) {
+	void nodeFill2(KeyList& value, bTreeNode* input, bTreeNode* input2, int index) {
 		int i = 0;
-		for (i = input2->keyNum;i > index;i--) {
+		for (i = input2->keyNum; i > index; i--) {
 			input2->keys[i + 1] = input2->keys[i]; //shift keys
 			input2->children[i + 1] = input2->children[i]; //shift children.
 		}
@@ -764,15 +764,15 @@ public:
 	}
 	void split2(string hash, string item, bTreeNode* input, bTreeNode* input2, int index, KeyList& value, bTreeNode** New) {
 		int i = 0, middle = 0;
-		if (index <= ceil((tDeg*1.0)/2)) {
+		if (index <= ceil((tDeg * 1.0) / 2)) {
 			middle = ceil((tDeg * 1.0) / 2);
 		}
 		else {
 			middle = ceil((tDeg * 1.0) / 2) + 1;
 		}
 
-		 *New = new bTreeNode(tDeg, false);
-		for (i = middle + 1;i <= tDeg;i++) {
+		*New = new bTreeNode(tDeg, false);
+		for (i = middle + 1; i <= tDeg; i++) {
 			(*New)->keys[i - middle] = input2->keys[i];
 			(*New)->children[i - middle] = input2->children[i];
 		}
@@ -782,7 +782,7 @@ public:
 			nodeFill2(value, input, input2, index);
 		}
 		else {
-			nodeFill2(value, input, *New, index-middle);
+			nodeFill2(value, input, *New, index - middle);
 		}
 		value = input2->keys[input2->keyNum];
 		(*New)->children[0] = input2->children[input2->keyNum];
@@ -791,7 +791,7 @@ public:
 	void Display(bTreeNode* root) {
 		int i = 0;
 		if (root != NULL) {
-			for (i = 0;i < root->keyNum;i++) {
+			for (i = 0; i < root->keyNum; i++) {
 				Display(root->children[i]);
 				cout << "index: " << i + 1 << " , ";
 				root->keys[i + 1].print();
@@ -840,8 +840,8 @@ public:
 			else {
 				condition = findIndex(hash, input->children[i]);
 			}
-			if (input->children[i]!=NULL) {
-				if (input->children[i]->keyNum < ceil((tDeg*1.0)/2)-1) {
+			if (input->children[i] != NULL) {
+				if (input->children[i]->keyNum < ceil((tDeg * 1.0) / 2) - 1) {
 					Undo(input, i);
 				}
 			}
@@ -850,7 +850,7 @@ public:
 	}
 	void clear(bTreeNode* input, int index) {
 		int i;
-		for (i = index + 1;i <= input->keyNum;i++) {
+		for (i = index + 1; i <= input->keyNum; i++) {
 			input->keys[i - 1] = input->keys[i];
 			input->children[i - 1] = input->children[i];
 			cout << input->keys[i - 1].head->itemName << endl;
@@ -892,8 +892,8 @@ public:
 				}
 				else {
 					if (input->children[value + 1]->keyNum > ceil((tDeg * 1.0) / 2)) {
-					left(input, value + 1);
-				     }
+						left(input, value + 1);
+					}
 					else {
 						cout << input->keys[1].head->itemName << endl;
 						Combine(input, value);
@@ -906,7 +906,7 @@ public:
 		int i;
 		bTreeNode* placeholder;
 		placeholder = input->children[value];
-		for (i = placeholder->keyNum;i > 0;i--) {
+		for (i = placeholder->keyNum; i > 0; i--) {
 			placeholder->keys[i + 1] = placeholder->keys[i];
 			placeholder->children[i + 1] = placeholder->children[i];
 		}
@@ -921,7 +921,7 @@ public:
 	void left(bTreeNode* input, int value) {
 		int i;
 		bTreeNode* placeholder;
-		placeholder = input->children[value-1];
+		placeholder = input->children[value - 1];
 		placeholder->keyNum++;
 		placeholder->keys[placeholder->keyNum] = input->keys[value];
 		placeholder->children[placeholder->keyNum] = input->children[value]->children[0];
@@ -929,9 +929,9 @@ public:
 		input->keys[value] = placeholder->keys[1];
 		placeholder->children[0] = placeholder->children[1];
 		placeholder->keyNum--;
-		for (i = 1;i<=placeholder->keyNum;i++) {
-			placeholder->keys[i] = placeholder->keys[i+1];
-			placeholder->children[i] = placeholder->children[i+1];
+		for (i = 1; i <= placeholder->keyNum; i++) {
+			placeholder->keys[i] = placeholder->keys[i + 1];
+			placeholder->children[i] = placeholder->children[i + 1];
 		}
 	}
 	void Combine(bTreeNode* input, int value) {
@@ -947,12 +947,12 @@ public:
 		if (placeholder2->children[0] != NULL) {
 			placeholder2->children[placeholder2->keyNum] = placeholder->children[0];
 		}
-		for (i = 1;i <= placeholder->keyNum;i++) {
-				placeholder2->keyNum++;
-				placeholder2->keys[placeholder2->keyNum] = placeholder->keys[i];
-				placeholder2->children[placeholder2->keyNum] = placeholder->children[i];
+		for (i = 1; i <= placeholder->keyNum; i++) {
+			placeholder2->keyNum++;
+			placeholder2->keys[placeholder2->keyNum] = placeholder->keys[i];
+			placeholder2->children[placeholder2->keyNum] = placeholder->children[i];
 		}
-		for (i = value;i < input->keyNum;i++) {
+		for (i = value; i < input->keyNum; i++) {
 			input->keys[i] = input->keys[i + 1];
 			input->children[i] = input->children[i + 1];
 		}
@@ -979,17 +979,18 @@ public:
 
 		if (max != -1)
 		{
-			return (result % max);
+			int id = pow(2, max);
+			return (result % id);
 		}
 		//cout << "HASH: " << hash << endl;
 		//cout << "RETURNED VALUE: " << result << endl;
 		return result;
 	}
-	void Redistribute(bTreeNode* root,bTree& newTree,int r1,int r2,int iSpace,FileList& hashes) { //r1 and r2 are the ranges of the machines.
+	void Redistribute(bTreeNode* root, bTree& newTree, int r1, int r2, int iSpace, FileList& hashes) { //r1 and r2 are the ranges of the machines.
 		int i = 0;
 		if (root != NULL) {
-			for (i = 0;i < root->keyNum;i++) {
-				Redistribute(root->children[i],newTree,r1,r2,iSpace,hashes);
+			for (i = 0; i < root->keyNum; i++) {
+				Redistribute(root->children[i], newTree, r1, r2, iSpace, hashes);
 				if (hashing(root->keys[i + 1].head->hash, iSpace) > r1 && hashing(root->keys[i + 1].head->hash, iSpace) <= r2) {
 					newTree.copyList(root->keys[i + 1]);
 					hashes.insertEND(root->keys[i + 1].head->hash);
@@ -998,13 +999,13 @@ public:
 					break;
 				}
 			}
-			if (root->children[i]!=NULL) {
-				Redistribute(root->children[i], newTree, r1, r2, iSpace,hashes);
+			if (root->children[i] != NULL) {
+				Redistribute(root->children[i], newTree, r1, r2, iSpace, hashes);
 			}
 		}
 	}
-	void Transfer(bTree& newTree, int r1, int r2, int iSpace,FileList& hashes) {
-		Redistribute(root, newTree, r1, r2, iSpace,hashes);
+	void Transfer(bTree& newTree, int r1, int r2, int iSpace, FileList& hashes) {
+		Redistribute(root, newTree, r1, r2, iSpace, hashes);
 	}
 	//new tree will call a function to traverse through a list. and copy all of its contents.
 	void copyList(KeyList list) {
@@ -1014,7 +1015,7 @@ public:
 			point = point->next;
 		}
 	}
-	bool ExtractFiles(bTreeNode* find, string hash, string& path,int& index) {
+	bool ExtractFiles(bTreeNode* find, string hash, string& path, int& index) {
 		if (find == NULL) {
 			cout << "THE VALUE DOES NOT EXIST" << endl;
 			return false;
@@ -1036,5 +1037,3 @@ public:
 		}
 	}
 	friend class KeyList;
-};
-
