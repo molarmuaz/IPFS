@@ -91,13 +91,14 @@ public:
 		}
 		return *this;
 	}
-	/*void insertListInTree(bTree& newTree) {
+	void pathFile(string& filepath) {
 		keyNode* point = head;
 		while (point != nullptr) {
-			newTree.insert2(point->hash, point->itemName);
+			filepath = filepath.append(point->itemName);
+			filepath = filepath.append("\n");
 			point = point->next;
 		}
-	}*/
+	}
 };
 //b tree node
 //contains a structure array of the key.
@@ -649,9 +650,7 @@ public:
 			return 0;
 		}
 	}
-	bTreeNode* Search(string hash, bTreeNode*, int& index) {
-
-	}
+	
 	int SearchForNode(string hash, bTreeNode* input, int& index) { //dont need to searchfor this now as we alr have a hash finding function already.
 		if (input != NULL) {
 			if (hashing(hash) < hashing(input->keys[1].head->hash)) {
@@ -933,6 +932,20 @@ public:
 			this->insert2(point->hash, point->itemName);
 			point = point->next;
 		}
+	}
+	bool ExtractFiles(bTreeNode* find, string hash, string& path,int& index) {
+		if (find == NULL) {
+			cout << "THE VALUE DOES NOT EXIST" << endl;
+			return false;
+		}
+		if (SearchForNode(hash, find, index)) {
+			find->keys[index].pathFile(path);
+			return true;
+		}
+		else {
+			ExtractFiles(find->children[index], hash, path, index);
+		}
+
 	}
 	friend class KeyList;
 };
