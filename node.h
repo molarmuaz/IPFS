@@ -1,4 +1,3 @@
-#pragma once
 #include "maxtree.h"
 #include "RoutingTable.h"
 
@@ -12,15 +11,15 @@ struct fileRange
 
 class node
 {
-private:
+public:
+
     fileRange range;
     
     node* next;
     int id;
     RoutingTable router;
-public:
     bTree directory;
-    node(int deg): directory(deg), router(this)
+    node(int deg): directory(deg)
     {
         next = nullptr;
     }
@@ -100,6 +99,7 @@ public:
     {
         range.start = a;
         range.end = id;
+        router.setParentRange(range);
     }
 
     string bTreeDisplay()
