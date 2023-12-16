@@ -9,6 +9,7 @@
 using namespace std;
 class node;
 class RoutingTable;
+class RoutingManager;
 int hashing(string hash, int max = -1)  //takes a hash and converts it to int
 {
 	char x;
@@ -100,7 +101,7 @@ class node
 {
 public:
 	bTree directory;
-
+	routingManager* manager;
 	RoutingTable* a;
 	// bTree head;
 	node* next;
@@ -112,9 +113,7 @@ public:
 		next = nullptr;
 	}
 
-	void setRoutingTable(RoutingTable& b){
-		 a=b;
-	}
+	
 
 	bTree getDir()
 	{
@@ -189,14 +188,32 @@ public:
 
 	void setStart(int x)
 	{
-		range.start = x;
-		range.end = id;
-		a.setParentRange(range);
+		 range.start = x;
+    		 range.end = id;
+    		 manager->setNodeStart(x);
 	}
 
 };
+
+
+class RoutingManager{
+public:
+node* managerNode;
+RoutingTable* managerTable;
+void setNodeStart(int x){
+
+setNodeStart(int x)
+{
+    routingTable->setParentRange({x, nodeObject->getID()});
+}
+	
+void setParentRange(const fileRange& range);
+
+
+}
 class RoutingTable {
 public:
+	RoutingManager* manager;
 	fileRange parentRange; // circular linked list node that is parent to the routing table
 	routingNode* head; //start of the routing table
 	routingNode* tail; //end of the routing table
