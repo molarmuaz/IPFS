@@ -101,7 +101,7 @@ class node
 public:
 	bTree directory;
 
-	RoutingTable a;
+	RoutingTable* a;
 	// bTree head;
 	node* next;
 	int id;
@@ -110,6 +110,10 @@ public:
 	node(int deg) :directory(deg)
 	{
 		next = nullptr;
+	}
+
+	void setRoutingTable(RoutingTable& b){
+		 a=b;
 	}
 
 	bTree getDir()
