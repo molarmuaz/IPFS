@@ -1,3 +1,4 @@
+
 #include "maxtree.h"
 #include <iostream>
 #include <string.h>
@@ -9,7 +10,6 @@
 using namespace std;
 class node;
 class RoutingTable;
-class RoutingManager;
 int hashing(string hash, int max = -1)  //takes a hash and converts it to int
 {
 	char x;
@@ -90,6 +90,7 @@ struct fileRange
 struct routingNode {
 	int identifier = 0; //the key 
 	node* machine = nullptr;  //the address of that node
+	int no;
 
 	fileRange range; //the range of that node
 
@@ -101,8 +102,8 @@ class node
 {
 public:
 	bTree directory;
-	routingManager* manager;
-	RoutingTable* a;
+
+	RoutingTable a;
 	// bTree head;
 	node* next;
 	int id;
@@ -112,8 +113,6 @@ public:
 	{
 		next = nullptr;
 	}
-
-	
 
 	bTree getDir()
 	{
@@ -152,6 +151,7 @@ public:
 		out << path.rdbuf();
 
 		string s = out.str();
+
 		directory.insert2(hash, s);
 	}
 
@@ -186,46 +186,31 @@ public:
 		return range.end;
 	}
 
-	void setStart(int x)
+	void setStart(int a)
 	{
-		 range.start = x;
-    		 range.end = id;
-    		 manager->setNodeStart(x);
+		range.start = a;
+		range.end = id;
 	}
-
 };
-
-
-class RoutingManager{
-public:
-node* managerNode;
-RoutingTable* managerTable;
-void setNodeStart(int x){
-
-setNodeStart(int x)
-{
-    routingTable->setParentRange({x, nodeObject->getID()});
-}
-	
-void setParentRange(const fileRange& range);
-
-
-}
 class RoutingTable {
 public:
-	RoutingManager* manager;
-	fileRange parentRange; // circular linked list node that is parent to the routing table
 	routingNode* head; //start of the routing table
 	routingNode* tail; //end of the routing table
-	int size; //number of nodes in the routing table (used for calculation of linked list nodes)
+	int size; //max number of nodes in the routing table
+	int count; //current number of nodes in the routing table
+
+	
+
 
 	RoutingTable() : head(nullptr), tail(nullptr) {
 		size = 0;
+		count = 0;
 	}
 
-	void setParentRange(fileRange a) {
-		parentRange = a;
+	void setSize(int x) {
+		size = x;
 	}
+
 
 	void insertionSort(routingNode* head)
 	{
@@ -249,11 +234,21 @@ public:
 			}
 			curr = next;
 		}
+
+		int i = 0;
+		curr = head;
+		while (curr) {
+			curr->no = i;
+			curr = curr->next;
+			i++;
+		}
+		 
+		return;
 	}
 
 
 
-	void insertEntry(node* a)
+	void insertEntry(fileRange pRange, node* a)
 	{
 		routingNode* temp = new routingNode;
 		temp->machine = a;
@@ -262,27 +257,34 @@ public:
 		temp->prev = nullptr;
 		temp->range.start = 0;
 		temp->range.end = a->id;
+		temp->no = count;
 
+		if (count == size) {
+			cerr << "Table full" << endl;
+			return;
+		}		
 
-		if (!head || size == 0)
+		if (!head || count == 0)
 		{
 			// The routing table is empty, so set the new node as both head and tail
-			fileRange temp2 = parentRange; //gets the range of the circular linked list node
+			fileRange temp2 = pRange; //gets the range of the circular linked list node
 			temp->range.start = temp2.end + 1;
 			head = temp;
 			tail = temp;
-			size++;
+			count++;
 		}
 
 		else
 		{
-
+			
 			temp->prev = tail;
 			tail->next = temp;
 			tail = temp;
 			tail->range.start = (tail->prev->range.end + 1); //sets the starting range of the new node
 			insertionSort(head); //sorts the linked list in ascending order on the basis of machine IDs
-			size++;
+								// then numbers them 
+
+			count++;
 		}
 
 	};
@@ -305,13 +307,13 @@ public:
 
 		current->next->prev = pre;
 
-		pre->next->range.start = current->range.start; //works on the principle of consitent hashing
+		pre->next->range.start = current->range.start; //works on the principle of consistent hashing
 
 		delete current;
 
 		current = NULL;
 
-		size--;
+		count--;
 	};
 
 	void print() {
@@ -376,3 +378,9 @@ public:
 		}
 	}
 };
+
+
+
+
+
+
