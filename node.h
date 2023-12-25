@@ -98,100 +98,7 @@ struct routingNode {
 	routingNode* prev = nullptr; // prev routingTable node
 };
 
-class node
-{
-public:
-	bTree directory;
 
-	RoutingTable a;
-	// bTree head;
-	node* next;
-	int id;
-	fileRange range;
-public:
-	node(int deg) :directory(deg)
-	{
-		next = nullptr;
-	}
-
-	bTree getDir()
-	{
-		return directory;
-	}
-
-	RoutingTable getRouter()
-	{
-		return a;
-	}
-
-	void setID(int idn)
-	{
-		id = idn;
-	}
-
-	int getID()
-	{
-		return id;
-	}
-
-	void setNext(node* n)
-	{
-		next = n;
-	}
-
-	node* getNext()
-	{
-		return next;
-	}
-
-	void insert(ifstream& path, string hash)
-	{
-		ostringstream out;
-
-		out << path.rdbuf();
-
-		string s = out.str();
-
-		directory.insert2(hash, s);
-	}
-
-	void remove(string hash)
-	{
-		directory.remove(hash);
-	}
-
-	string search(string hash)
-	{
-		string path;
-		int a = 0;
-		if (!directory.ExtractFiles(directory.root, hash, path, a))
-		{
-			path = "FILE NOT FOUND";
-		}
-		return path;
-	}
-
-	fileRange getRange()
-	{
-		return range;
-	}
-
-	int getStart()
-	{
-		return range.start;
-	}
-
-	int getEnd()
-	{
-		return range.end;
-	}
-
-	void setStart(int a)
-	{
-		range.start = a;
-		range.end = id;
-	}
-};
 class RoutingTable {
 public:
 	routingNode* head; //start of the routing table
@@ -376,6 +283,102 @@ public:
 			}
 
 		}
+	}
+};
+
+
+class node
+{
+public:
+	bTree directory;
+
+	RoutingTable a;
+	// bTree head;
+	node* next;
+	int id;
+	fileRange range;
+public:
+	node(int deg) :directory(deg)
+	{
+		next = nullptr;
+	}
+
+	bTree getDir()
+	{
+		return directory;
+	}
+
+	RoutingTable getRouter()
+	{
+		return a;
+	}
+
+	void setID(int idn)
+	{
+		id = idn;
+	}
+
+	int getID()
+	{
+		return id;
+	}
+
+	void setNext(node* n)
+	{
+		next = n;
+	}
+
+	node* getNext()
+	{
+		return next;
+	}
+
+	void insert(ifstream& path, string hash)
+	{
+		ostringstream out;
+
+		out << path.rdbuf();
+
+		string s = out.str();
+
+		directory.insert2(hash, s);
+	}
+
+	void remove(string hash)
+	{
+		directory.remove(hash);
+	}
+
+	string search(string hash)
+	{
+		string path;
+		int a = 0;
+		if (!directory.ExtractFiles(directory.root, hash, path, a))
+		{
+			path = "FILE NOT FOUND";
+		}
+		return path;
+	}
+
+	fileRange getRange()
+	{
+		return range;
+	}
+
+	int getStart()
+	{
+		return range.start;
+	}
+
+	int getEnd()
+	{
+		return range.end;
+	}
+
+	void setStart(int a)
+	{
+		range.start = a;
+		range.end = id;
 	}
 };
 
