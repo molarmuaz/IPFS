@@ -7,9 +7,11 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+
 using namespace std;
 class node;
 class RoutingTable;
+
 int hashing(string hash, int max = -1)  //takes a hash and converts it to int
 {
 	char x;
@@ -55,6 +57,7 @@ string readFileToString(ifstream& inputStream) {
 
 	return content;
 }
+
 string getSHA1HashFile(ifstream& inputStream) {
 
 	const  string& data = readFileToString(inputStream);
@@ -106,7 +109,7 @@ public:
 	int size; //max number of nodes in the routing table
 	int count; //current number of nodes in the routing table
 
-	
+
 
 
 	RoutingTable() : head(nullptr), tail(nullptr) {
@@ -155,15 +158,16 @@ public:
 
 
 
-	void insertEntry(fileRange pRange, node* a)
-	{
+	void insertEntry(fileRange pRange, node& a, int y)
+	{	
+		node* x = &a;
 		routingNode* temp = new routingNode;
-		temp->machine = a;
-		temp->identifier = a->id;
+		temp->machine = x ;
+		temp->identifier = y;
 		temp->next = nullptr;
 		temp->prev = nullptr;
 		temp->range.start = 0;
-		temp->range.end = a->id;
+		temp->range.end = y;
 		temp->no = count;
 
 		if (count == size) {
@@ -293,7 +297,6 @@ public:
 	bTree directory;
 
 	RoutingTable a;
-	// bTree head;
 	node* next;
 	int id;
 	fileRange range;
