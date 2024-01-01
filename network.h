@@ -27,6 +27,11 @@ public:
         activeIDs = new bool[numberOfPCs] {0};
     }
 
+    int getMaxPCs()
+    {
+        return pow(2, IDspace);
+    }
+
     void activateamount(int x)
     {
         for (int i = 0; i < x; i++)
@@ -213,7 +218,6 @@ public:
 
     void insertFile(ifstream& path) // we can later create a function to read files and then insert the contents of that file in this function as a string
     {
-
         string hash = getSHA1HashFile(path);
         int key = hashing(hash);
 
@@ -263,10 +267,10 @@ public:
             a = head->getRouter().findNode(key);
         }
 
-        return a.search(hash);
+        return a->search(hash);
     }
 
- string displayBTree(int key)
+    string displayBTree(int key)
     {
         
         node* a;
